@@ -1,0 +1,160 @@
+<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LISHU · סינון התיקייה האחרונה</title><style>:root{font-family:Arial,sans-serif;color-scheme:dark;background:#11101b;color:#f5f2fa}*{box-sizing:border-box}body{margin:0}header,main{max-width:1050px;margin:auto;padding:18px 24px}header{display:flex;justify-content:space-between;gap:16px;align-items:center}h1{margin:0;font-size:25px}p{color:#c9c3d4}button,select{background:#292338;color:#fff;border:1px solid #716282;border-radius:10px;padding:12px 18px;font:inherit;cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}#connect,#keep{background:#7245b3}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.stats>div{background:#211d2d;border-radius:12px;padding:14px}.stats strong,.stats small{display:block}.stats strong{font-size:25px}.stats small{color:#bbb0cc}progress{width:100%;height:16px;accent-color:#9f70e5;margin:12px 0}.tools,.caption,.choices,.secondary,.deletebar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0;flex-wrap:wrap}.viewer{background:#211d2d;border-radius:16px;overflow:hidden}.image{height:min(63vh,700px);display:grid;place-items:center;background:#0a090d}.image img{max-width:100%;max-height:100%;object-fit:contain}.caption{padding:0 16px}.choices button{flex:1;min-width:120px;font-weight:bold;font-size:18px}.deletebar{border-top:1px solid #51465c;padding-top:14px}.deletebar span{font-size:13px;color:#c9c3d4}#reject,.danger,#deleteReview{background:#783447}dialog{background:#211d2d;color:#fff;border:1px solid #806b9b;border-radius:14px;max-width:min(650px,90vw);max-height:80vh}dialog::backdrop{background:#000b}#deleteList{overflow:auto;max-height:30vh;font-size:13px;line-height:1.8;direction:ltr}#deleteList div{border-bottom:1px solid #494052}@media(max-width:580px){header{display:block}#connect{margin-top:12px}.stats strong{font-size:18px}.stats small{font-size:11px}header,main{padding:12px}.image{height:55vh}}
+</style></head><body>
+<header><div><h1>LISHU · סינון תמונות</h1><p>התמונות נקראות ישירות מהתיקייה שתבחרי במחשב</p></div><button id="connect">בחירת תיקייה / רענון</button></header>
+<main><section class="stats"><div><strong id="total">0</strong><small>בתיקייה שנבחרה</small></div><div><strong id="done">0</strong><small>סוננו</small></div><div><strong id="remaining">0</strong><small>נותרו</small></div><div><strong id="percent">0%</strong><small>התקדמות</small></div></section><progress id="progress" max="1" value="0"></progress>
+<div class="tools"><span id="folderName">בחרי את ״ארטור נגד גיא״, או את תיקיית ״עוד לא סונן״</span><label>הצגה <select id="filter"><option value="new">טרם סיננתי</option><option value="review">לבדיקה בהמשך</option><option value="reject">סימנתי למחיקה</option><option value="keep">לשמור</option><option value="all">כל התמונות</option></select></label></div>
+<section class="viewer"><div class="image"><img id="photo" alt="" hidden><p id="loading">לחצי על ״בחירת תיקייה״ ובחרי את התיקייה שנשארה לך.</p></div><div class="caption"><b id="name"></b><span id="position"></span></div></section>
+<div class="choices"><button id="reject">← למחיקה</button><button id="review">↓ אחר כך</button><button id="keep">לשמור →</button></div><div class="secondary"><button id="undo">ביטול הבחירה האחרונה</button><button id="previous">הקודמת</button><button id="next">הבאה</button></div>
+<div class="deletebar"><button id="deleteReview" disabled>מחיקת המסומנות (0)</button><span>רק אחרי אישור מפורש. מחיקה קבועה, ללא סל מחזור.</span></div><p id="status" role="status"></p></main>
+<dialog id="deleteDialog"><h2>למחוק את התמונות שסימנת?</h2><p id="deleteSummary"></p><p>זו מחיקה קבועה מהמחשב, ללא סל מחזור.</p><details><summary>הצגת שמות הקבצים</summary><div id="deleteList"></div></details><div class="secondary"><button id="cancelDelete" autofocus>חזרה לסינון</button><button id="confirmDelete" class="danger">כן, למחוק לצמיתות</button></div><p id="deleteStatus" role="status"></p></dialog>
+<script>'use strict';
+const $=id=>document.getElementById(id), KEY='lishu-live-folder-v1';
+let root=null,photos=[],decisions={},history=[],visible=[],current=null,objectURL=null,busy=false,seq=0,deleteTargets=[];
+try{const saved=JSON.parse(localStorage.getItem(KEY)||'{}');decisions=saved.decisions||{};history=saved.history||[]}catch{}
+const say=s=>$('status').textContent=s;
+function key(p){return `${p.name}|${p.size}|${p.mtime}`}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({decisions,history:history.slice(-150)}))}catch{say('לא הצלחתי לשמור בדפדפן. בדקי שיש מקום פנוי ואל תסגרי את הדף.')}}
+async function scan(dir,prefix=''){
+  const found=[];
+  for await(const [name,handle] of dir.entries()){
+    if(handle.kind==='directory'){found.push(...await scan(handle,prefix+name+'/'));continue}
+    if(!/\.(arw|jpe?g|png)$/i.test(name))continue;
+    const f=await handle.getFile();
+    found.push({name,relative:prefix+name,size:f.size,mtime:f.lastModified,handle,parent:dir});
+  }
+  return found;
+}
+async function connect(){
+  if(!window.showDirectoryPicker){say('פתחי את המסך ב־Chrome או Edge במחשב.');return}
+  if(busy)return;
+  try{
+    const selected=await showDirectoryPicker({id:'lishu-last-folder',mode:'read'});
+    busy=true;$('connect').disabled=true;say('סורק את התיקייה שבחרת…');
+    const list=await scan(selected);
+    if(!list.length){say('לא נמצאו תמונות ARW, JPG או PNG בתיקייה שבחרת.');return}
+    list.sort((a,b)=>a.relative.localeCompare(b.relative,'he',{numeric:true}));
+    root=selected;photos=list;history=history.filter(h=>photos.some(p=>key(p)===h.id));
+    $('folderName').textContent=`${selected.name} · ${list.length.toLocaleString()} תמונות`;
+    say('התיקייה עודכנה. הבחירות הקודמות לתמונות הזהות נשמרו.');
+    render();
+  }catch(e){if(e.name!=='AbortError')say('לא הצלחתי לקרוא את התיקייה: '+e.message)}
+  finally{busy=false;$('connect').disabled=false}
+}
+function matches(p){const d=decisions[key(p)],f=$('filter').value;return f==='all'||(f==='new'&&!d)||d===f}
+function render(preferred=null,keepEmpty=false){
+  visible=photos.filter(matches);
+  current=visible.find(p=>key(p)===preferred)||(!keepEmpty?visible[0]:null)||null;
+  const done=photos.filter(p=>['keep','reject'].includes(decisions[key(p)])).length;
+  const rejects=photos.filter(p=>decisions[key(p)]==='reject').length;
+  $('total').textContent=photos.length.toLocaleString();$('done').textContent=done.toLocaleString();
+  $('remaining').textContent=(photos.length-done).toLocaleString();
+  $('percent').textContent=(photos.length?Math.floor(done/photos.length*1000)/10:0).toLocaleString('he-IL')+'%';
+  $('progress').max=Math.max(photos.length,1);$('progress').value=done;
+  $('deleteReview').textContent=`מחיקת המסומנות (${rejects.toLocaleString()})`;
+  $('deleteReview').disabled=rejects===0||busy;
+  $('undo').disabled=!history.length||busy;
+  for(const id of ['keep','reject','review','previous','next'])$(id).disabled=!current||busy;
+  show();save();
+}
+async function preview(p){
+  const file=await p.handle.getFile();
+  if(file.size!==p.size||Math.abs(file.lastModified-p.mtime)>5)throw Error('הקובץ השתנה. לחצי על ״רענון״.');
+  if(/\.(jpe?g|png)$/i.test(p.name))return file;
+  const bytes=await file.slice(0,2097152).arrayBuffer(),v=new DataView(bytes);
+  if(v.byteLength<8||v.getUint16(0)!==0x4949&&v.getUint16(0)!==0x4d4d)throw Error('לא זוהה קובץ RAW נתמך');
+  const little=v.getUint16(0)===0x4949,off=v.getUint32(4,little);
+  if(off+2>v.byteLength)throw Error('קובץ RAW לא נתמך');
+  const count=v.getUint16(off,little);let start=0,len=0,orientation=1;
+  for(let i=0;i<count;i++){
+    const at=off+2+i*12;if(at+12>v.byteLength)break;
+    const tag=v.getUint16(at,little);
+    if(tag===513)start=v.getUint32(at+8,little);
+    if(tag===514)len=v.getUint32(at+8,little);
+    if(tag===274)orientation=v.getUint16(at+8,little);
+  }
+  if(!start||!len||start+len>file.size)throw Error('לא נמצאה תצוגת JPEG בקובץ RAW');
+  const jpg=file.slice(start,start+len,'image/jpeg');
+  if(orientation===1)return jpg;
+  const bitmap=await createImageBitmap(jpg,{imageOrientation:'none'});
+  const canvas=document.createElement('canvas'),turn=orientation===6||orientation===8;
+  canvas.width=turn?bitmap.height:bitmap.width;canvas.height=turn?bitmap.width:bitmap.height;
+  const c=canvas.getContext('2d');c.translate(canvas.width/2,canvas.height/2);
+  c.rotate(orientation===6?Math.PI/2:orientation===8?-Math.PI/2:orientation===3?Math.PI:0);
+  c.drawImage(bitmap,-bitmap.width/2,-bitmap.height/2);bitmap.close();
+  return new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('לא ניתן להציג תמונה')),'image/jpeg',.92));
+}
+async function show(){
+  const token=++seq,img=$('photo');img.hidden=true;
+  if(objectURL){URL.revokeObjectURL(objectURL);objectURL=null}
+  if(!current){$('loading').hidden=false;$('loading').textContent=photos.length?'אין תמונות במסנן הזה. אפשר לבחור מסנן אחר.':'בחרי את התיקייה שנשארה לך.';$('name').textContent='';$('position').textContent='';return}
+  const p=current;
+  $('loading').hidden=false;$('loading').textContent='טוען תצוגה גדולה…';
+  $('name').textContent=p.name;$('position').textContent=`${visible.indexOf(p)+1} / ${visible.length}`;
+  try{
+    const blob=await preview(p);if(token!==seq)return;
+    objectURL=URL.createObjectURL(blob);img.onload=()=>{if(token===seq){img.hidden=false;$('loading').hidden=true}};
+    img.onerror=()=>{if(token===seq)$('loading').textContent='לא ניתן להציג את התמונה הזו'};
+    img.src=objectURL;img.alt=p.name;
+  }catch(e){if(token===seq)$('loading').textContent=e.message}
+}
+function choose(status){
+  if(busy||!current)return;
+  const id=key(current),idx=visible.indexOf(current),next=visible[idx+1];
+  history.push({id,previous:decisions[id]||null});decisions[id]=status;
+  say(status==='reject'?'סומנה למחיקה. הקובץ עדיין לא נמחק.':'הבחירה נשמרה.');
+  render(next?key(next):null,!next);
+}
+function undo(){
+  if(busy)return;const h=history.pop();if(!h)return;
+  if(h.previous)decisions[h.id]=h.previous;else delete decisions[h.id];
+  $('filter').value='all';say('הבחירה האחרונה בוטלה.');render(h.id);
+}
+function navigate(delta){const idx=visible.indexOf(current),p=visible[idx+delta];if(p)render(key(p))}
+function reviewDelete(){
+  if(busy||!root)return;
+  deleteTargets=photos.filter(p=>decisions[key(p)]==='reject');if(!deleteTargets.length)return;
+  $('deleteSummary').textContent=`${deleteTargets.length.toLocaleString()} תמונות שסימנת למחיקה בתיקייה ${root.name}.`;
+  $('confirmDelete').textContent=`כן, למחוק ${deleteTargets.length.toLocaleString()} תמונות לצמיתות`;
+  $('deleteList').replaceChildren();
+  for(const p of deleteTargets){const row=document.createElement('div');row.textContent=p.relative;$('deleteList').append(row)}
+  $('deleteStatus').textContent='';$('deleteDialog').showModal();
+}
+async function performDelete(){
+  if(busy||!$('deleteDialog').open||!root||!deleteTargets.length)return;
+  busy=true;$('confirmDelete').disabled=true;$('cancelDelete').disabled=true;
+  let count=0;
+  try{
+    if(await root.requestPermission({mode:'readwrite'})!=='granted')throw Error('לא ניתנה הרשאה למחיקה');
+    const checked=[];
+    for(const [i,p] of deleteTargets.entries()){
+      if(decisions[key(p)]!=='reject'||!photos.includes(p))throw Error('הרשימה השתנתה. יש לבדוק אותה מחדש.');
+      $('deleteStatus').textContent=`בודק התאמת קבצים ${i+1} / ${deleteTargets.length}`;
+      const f=await p.handle.getFile();
+      if(f.size!==p.size||Math.abs(f.lastModified-p.mtime)>5)throw Error(p.name+' השתנה. המחיקה נעצרה.');
+      checked.push(p);
+    }
+    for(const p of checked){
+      const f=await p.handle.getFile();
+      if(f.size!==p.size||Math.abs(f.lastModified-p.mtime)>5)throw Error(p.name+' השתנה. המחיקה נעצרה.');
+      await p.parent.removeEntry(p.name);photos=photos.filter(x=>x!==p);delete decisions[key(p)];
+      history=history.filter(h=>h.id!==key(p));count++;save();
+      $('deleteStatus').textContent=`נמחקו ${count} / ${checked.length}`;
+    }
+    say(`נמחקו ${count} תמונות. אפשר להמשיך לסנן.`);
+    $('deleteStatus').textContent=`המחיקה הושלמה: ${count} קבצים.`;
+  }catch(e){$('deleteStatus').textContent=`הפעולה נעצרה. נמחקו ${count} קבצים. ${e.message}`;say($('deleteStatus').textContent)}
+  finally{busy=false;deleteTargets=[];$('cancelDelete').disabled=false;$('cancelDelete').textContent='המשך סינון';render()}
+}
+$('connect').onclick=connect;
+for(const id of ['keep','reject','review'])$(id).onclick=()=>choose(id);
+$('undo').onclick=undo;$('previous').onclick=()=>navigate(-1);$('next').onclick=()=>navigate(1);
+$('filter').onchange=()=>render();$('deleteReview').onclick=reviewDelete;
+$('confirmDelete').onclick=performDelete;$('cancelDelete').onclick=()=>$('deleteDialog').close();
+$('deleteDialog').addEventListener('cancel',e=>{if(busy)e.preventDefault()});
+document.addEventListener('keydown',e=>{
+  if(e.repeat||busy||document.querySelector('dialog[open]')||['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName))return;
+  const actions={ArrowRight:()=>choose('keep'),ArrowLeft:()=>choose('reject'),ArrowDown:()=>choose('review'),Backspace:undo};
+  if(actions[e.key]){e.preventDefault();actions[e.key]()}
+});
+render();
+</script></body></html>
