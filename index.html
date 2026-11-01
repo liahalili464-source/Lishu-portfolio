@@ -67,11 +67,17 @@ footer{background:#15121a;color:#fff;padding:34px 0}.foot{width:min(calc(100% - 
 .collection-heading{font:800 clamp(22px,3vw,38px)/1 "DM Sans";letter-spacing:-.055em}
 .collection-meta{font:700 10px/1.4 "DM Sans";letter-spacing:.12em;color:#766b80;margin-top:6px}
 .collection-close{width:44px;height:44px;border:1px solid var(--line);background:transparent;border-radius:50%;cursor:pointer;font-size:29px;line-height:1}
-.collection-content{width:min(calc(100% - 44px),1450px);margin:35px auto 70px;columns:3 280px;column-gap:16px}
-.collection-content .gallery-card{margin:0 0 16px;break-inside:avoid;cursor:zoom-in;position:relative;background:#f1edf5;display:block}
-.collection-content .gallery-card img{width:100%;height:auto;display:block;object-fit:contain}
+.collection-content{width:min(calc(100% - 44px),1320px);margin:28px auto 22px;columns:3 260px;column-gap:14px}
+.collection-content .gallery-card{margin:0 0 14px;break-inside:avoid;cursor:zoom-in;position:relative;background:#eeeaf2;display:block;aspect-ratio:4/5;overflow:hidden}
+.collection-content .gallery-card img{width:100%;height:100%;display:block;object-fit:contain}
 .collection-content .gallery-card.is-broken{display:none}
 .collection-content .gallery-card:hover{outline:2px solid var(--purple);outline-offset:-2px}
+.collection-more-wrap{width:min(calc(100% - 44px),1320px);margin:8px auto 65px;display:flex;justify-content:center;align-items:center;flex-direction:column;gap:12px}
+.collection-more{border:1px solid var(--ink);background:transparent;color:var(--ink);font:800 11px/1 "DM Sans",sans-serif;letter-spacing:.12em;padding:16px 27px;cursor:pointer}
+.collection-more:hover{background:var(--ink);color:#fff}
+.collection-more[hidden]{display:none}
+.collection-count{font:700 10px/1 "DM Sans",sans-serif;letter-spacing:.1em;color:#817987}
+@media(max-width:760px){.collection-content{width:calc(100% - 20px);margin:12px auto;columns:2 145px;column-gap:9px}.collection-content .gallery-card{margin-bottom:9px}.collection-more-wrap{margin-bottom:35px}}
 .lightbox{position:fixed;inset:0;z-index:200;background:rgba(12,10,15,.95);display:none;align-items:center;justify-content:center;padding:28px}
 .lightbox.open{display:flex}
 .lightbox img{width:auto;height:auto;max-width:min(92vw,1500px);max-height:88vh;object-fit:contain}
@@ -170,12 +176,16 @@ const yearTwoIds=new Set([
 ]);
 const yearTwoFeatured=["1KarDXQ_qOmm7rSGvUnNS00vTHUkSGsiT","1hMZVK4AQZF--coCLqh1VF-bNkXGJvZr-","1flC6vU9Sm0c4GZrGgHC0zMkpDQMEWiHy"];
 const yearOneFeatured=["10347IJM5qe1qn4B5zJ4Ihq-0KJKtxAct","1hP1fBOZzTGRujQYaGDrXxnffC5BVP3T5"];
-function makeCard(id,index,ids,openAction){
+function makeCard(id,index,ids,openAction,mode="preview"){
  const card=document.createElement("figure");card.className="gallery-card";card.tabIndex=0;card.setAttribute("role","button");card.setAttribute("aria-label","Open photo");
- const im=document.createElement("img");im.loading=index<5?"eager":"lazy";im.decoding="async";im.src=drive(id,index<5?"w1400":"w900");im.alt="LISHU photography";im.dataset.retry="0";
+ const im=document.createElement("img");
+ im.loading=mode==="collection"?(index<6?"eager":"lazy"):(index<5?"eager":"lazy");
+ im.decoding="async";im.alt="LISHU photography";im.dataset.retry="0";
+ im.onload=()=>{if(mode==="collection"&&im.naturalWidth&&im.naturalHeight)card.style.aspectRatio=im.naturalWidth+"/"+im.naturalHeight};
+ im.src=drive(id,mode==="collection"?"w700":"w1200");
  im.onerror=()=>{
    const retry=Number(im.dataset.retry||0);
-   if(retry<2){im.dataset.retry=String(retry+1);setTimeout(()=>{im.src=drive(id,retry===0?"w700":"w400")},350+(index%5)*160);return}
+   if(retry<2){im.dataset.retry=String(retry+1);setTimeout(()=>{if(im.isConnected)im.src=drive(id,retry===0?"w600":"w400")},350+(index%5)*160);return}
    card.classList.add("is-broken");im.removeAttribute("src");
  };
  card.appendChild(im);
@@ -186,18 +196,30 @@ function makeCard(id,index,ids,openAction){
 }
 const collection=document.createElement("div");collection.className="collection-overlay";
 collection.setAttribute("role","dialog");collection.setAttribute("aria-modal","true");collection.setAttribute("aria-label","Photography gallery");
-collection.innerHTML='<div class="collection-top"><div><div class="collection-heading"></div><div class="collection-meta"></div></div><button class="collection-close" aria-label="Close gallery">×</button></div><div class="collection-content"></div>';
+collection.innerHTML='<div class="collection-top"><div><div class="collection-heading"></div><div class="collection-meta"></div></div><button class="collection-close" aria-label="Close gallery">×</button></div><div class="collection-content"></div><div class="collection-more-wrap"><div class="collection-count"></div><button type="button" class="collection-more">LOAD 9 MORE ↗</button></div>';
 document.body.appendChild(collection);
 const collectionContent=collection.querySelector(".collection-content");
+const moreButton=collection.querySelector(".collection-more");
+const collectionCount=collection.querySelector(".collection-count");
+let collectionIds=[],collectionShown=0;
+function appendCollectionPage(){
+ const end=Math.min(collectionShown+9,collectionIds.length);
+ const fragment=document.createDocumentFragment();
+ for(let i=collectionShown;i<end;i++)fragment.appendChild(makeCard(collectionIds[i],i,collectionIds,null,"collection"));
+ collectionContent.appendChild(fragment);collectionShown=end;
+ collectionCount.textContent=collectionShown+" / "+collectionIds.length+" PHOTOGRAPHS";
+ moreButton.hidden=collectionShown>=collectionIds.length;
+}
 function openCollection(title,ids){
+ collectionIds=ids;collectionShown=0;
  collection.querySelector(".collection-heading").textContent=title;
- collection.querySelector(".collection-meta").textContent=ids.length+" PHOTOGRAPHS";
- collectionContent.replaceChildren();
- ids.forEach((id,i)=>collectionContent.appendChild(makeCard(id,i,ids)));
+ collection.querySelector(".collection-meta").textContent="A CURATED PHOTOGRAPHY COLLECTION";
+ collectionContent.replaceChildren();appendCollectionPage();
  collection.classList.add("open");collection.scrollTop=0;document.body.style.overflow="hidden";
  collection.querySelector(".collection-close").focus();
 }
-function closeCollection(){collection.classList.remove("open");collectionContent.replaceChildren();document.body.style.overflow=""}
+function closeCollection(){collection.classList.remove("open");collectionContent.replaceChildren();collectionIds=[];collectionShown=0;document.body.style.overflow=""}
+moreButton.onclick=appendCollectionPage;
 collection.querySelector(".collection-close").onclick=closeCollection;
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!lb.classList.contains("open")&&collection.classList.contains("open"))closeCollection()});
 function orderGallery(g){
