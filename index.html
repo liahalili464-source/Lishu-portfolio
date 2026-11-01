@@ -67,6 +67,14 @@ footer{background:#15121a;color:#fff;padding:34px 0}.foot{width:min(calc(100% - 
  .gallery-progress{margin-top:12px}
  .lightbox{padding:14px}.lightbox-nav{width:40px;height:40px}.lightbox-prev{left:8px}.lightbox-next{right:8px}.lightbox-close{top:10px;right:10px}
 }
+
+/* GROWING UP: one clean, crop-free horizontal exhibition strip */
+.gallery[data-key="family"] .gallery-rail{height:clamp(340px,38vw,520px);gap:clamp(12px,1.1vw,20px);align-items:stretch;padding-right:8vw}
+.gallery[data-key="family"] .gallery-card{height:100%;width:auto;aspect-ratio:3/4;flex:0 0 auto;scroll-snap-align:start;overflow:hidden}
+.gallery[data-key="family"] .gallery-card img{width:100%;height:100%;object-fit:contain}
+@media(max-width:760px){
+ .gallery[data-key="family"] .gallery-rail{height:clamp(280px,66vw,390px);gap:9px;padding-right:10vw}
+}
 </style></head><body>
 <header><div class="nav"><a class="brand" href="#top">LISHU<b>.</b></a><nav><a href="#work">עבודות</a><a href="#about">קצת עליי</a></nav><a class="talk" href="https://instagram.com/lishu.il" target="_blank" rel="noreferrer">דברו איתי ↗</a></div></header>
 <main id="top">
@@ -129,10 +137,11 @@ function spreadOrder(items,groups=6){
  for(let row=0;row<max;row++) for(let col=0;col<chunks.length;col++) if(chunks[col][row]) out.push(chunks[col][row]);
  return out;
 }
-function makeCard(id,index,ids){
+function makeCard(id,index,ids,naturalSize=false){
  const card=document.createElement("figure");card.className="gallery-card";
  const im=document.createElement("img");im.loading=index<10?"eager":"lazy";im.src=drive(id,"w1600");im.alt="";
  im.dataset.retry="0";
+ if(naturalSize) im.onload=()=>{if(im.naturalWidth&&im.naturalHeight)card.style.aspectRatio=im.naturalWidth+"/"+im.naturalHeight};
  im.onerror=()=>{
    const retry=Number(im.dataset.retry||0);
    if(retry===0){im.dataset.retry="1";setTimeout(()=>{im.src=drive(id,"w1000")},250+((index%6)*120));return}
@@ -149,6 +158,9 @@ function buildGallery(g){
  const shell=document.createElement("div");shell.className="gallery-shell";
  const rail=document.createElement("div");rail.className="gallery-rail";
 
+ if(g.dataset.key==="family"){
+   ids.forEach((id,i)=>rail.appendChild(makeCard(id,i,ids,true)));
+ }else{
  for(let p=0;p<ids.length;p+=4){
    const batch=ids.slice(p,p+4);
    const panel=document.createElement("div");panel.className="gallery-panel "+(((p/4)%2)?"layout-b":"layout-a");
@@ -160,6 +172,7 @@ function buildGallery(g){
    if(batch[2])stack.appendChild(makeCard(batch[2],p+2,ids));
    if(batch[3])last.appendChild(makeCard(batch[3],p+3,ids));
    panel.append(first,stack,last);rail.appendChild(panel);
+ }
  }
  const nav=document.createElement("div");nav.className="gallery-nav";
  nav.innerHTML='<div class="gallery-controls"><button class="gallery-control prev" aria-label="Previous gallery view">‹</button><button class="gallery-control next" aria-label="Next gallery view">›</button></div>';
