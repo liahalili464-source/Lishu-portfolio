@@ -29,52 +29,73 @@ footer{background:#15121a;color:#fff;padding:34px 0}.foot{width:min(calc(100% - 
  .project-head.simple .num{margin:0}
 }
 
-/* PROJECT GALLERIES: spacious editorial clusters, crop-free */
+
+/* Curated project covers: editorial first, full uncropped archive on demand */
 .gallery{direction:ltr;position:relative}
-.gallery-stage,.gallery-thumbs{display:none!important}
-.gallery-shell{position:relative}
-.gallery-rail{display:flex;gap:clamp(34px,5vw,86px);overflow-x:auto;overflow-y:hidden;overscroll-behavior-inline:contain;scroll-snap-type:x mandatory;scrollbar-width:none;cursor:grab;touch-action:pan-x;padding:0 9vw 0 0}
-.gallery-rail::-webkit-scrollbar{display:none}.gallery-rail.dragging{cursor:grabbing;scroll-snap-type:none}
-.gallery-panel{flex:0 0 auto;height:min(62vh,660px);min-height:500px;display:flex;align-items:stretch;gap:clamp(12px,1.3vw,22px);scroll-snap-align:start}
-.gallery-column{height:100%;display:flex;flex-direction:column;gap:clamp(12px,1.3vw,22px);flex:0 0 auto}
-.gallery-column.stack{justify-content:center}
-.gallery-column.stack .gallery-card{height:calc(50% - 7px)}
-.gallery-column.feature .gallery-card{height:100%}
-.gallery-card{width:auto;flex:0 0 auto;margin:0;position:relative;overflow:hidden;background:transparent;cursor:zoom-in}
-.gallery-card img{height:100%;width:auto;max-width:none;display:block;object-fit:contain;transition:transform .45s ease}
-.gallery-card:hover img{transform:scale(1.012)}
-.gallery-card.is-broken{display:none}
-.gallery-panel.layout-b .feature.first{order:3}.gallery-panel.layout-b .stack{order:1}.gallery-panel.layout-b .feature.last{order:2}
-.gallery-nav{position:absolute;inset:50% 12px auto 12px;transform:translateY(-50%);display:flex;justify-content:space-between;pointer-events:none;z-index:3}
-.gallery-controls{display:contents}
-.gallery-control{pointer-events:auto;width:46px;height:46px;border:1px solid rgba(255,255,255,.78);border-radius:50%;background:rgba(20,17,24,.62);color:#fff;backdrop-filter:blur(8px);display:grid;place-items:center;font-size:26px;cursor:pointer;opacity:.9}
-.gallery-control:hover{opacity:1}
-.gallery-progress{height:2px;background:rgba(100,90,110,.12);margin-top:16px;overflow:hidden}
-.gallery-progress span{display:block;height:100%;width:4%;background:currentColor;transition:width .15s ease}
-.lightbox{position:fixed;inset:0;z-index:200;background:rgba(12,10,15,.94);display:none;align-items:center;justify-content:center;padding:28px}
-.lightbox.open{display:flex}.lightbox img{width:auto;height:auto;max-width:min(92vw,1500px);max-height:88vh;object-fit:contain}
+.gallery-shell{width:100%}
+.gallery-preview{display:grid;grid-template-columns:1.3fr 1fr 1fr;grid-template-rows:repeat(2,minmax(0,1fr));gap:clamp(8px,1.15vw,16px);height:clamp(450px,52vw,690px)}
+.gallery-preview .gallery-card{margin:0;min-width:0;min-height:0;position:relative;overflow:hidden;cursor:pointer;background:#e8e2ef}
+.gallery-preview .gallery-card:first-child{grid-column:1;grid-row:1 / span 2}
+.gallery-preview .gallery-card img{width:100%;height:100%;object-fit:cover;transition:transform .5s ease}
+.gallery-preview .gallery-card:hover img{transform:scale(1.035)}
+.gallery-preview .gallery-card:after{content:"";position:absolute;inset:50% 0 0;background:linear-gradient(transparent,rgba(10,8,14,.26));pointer-events:none}
+.gallery-preview .gallery-card:focus-visible{outline:3px solid #b49cff;outline-offset:-3px}
+.gallery-preview .gallery-card.is-broken{display:none}
+.gallery-preview .gallery-card:nth-child(2) img{object-position:center 38%}
+.gallery-preview .gallery-card:nth-child(3) img{object-position:center 35%}
+.gallery-preview .gallery-card:nth-child(4) img{object-position:center 43%}
+.gallery-preview .gallery-card:nth-child(5) img{object-position:center 40%}
+.gallery-preview .gallery-card:nth-child(6) img{object-position:center 35%}
+.gallery-footer{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-top:22px;direction:ltr}
+.gallery-footer .gallery-note{font:700 10px/1.4 "DM Sans",sans-serif;letter-spacing:.13em;opacity:.55}
+.gallery-open{border:1px solid currentColor;background:transparent;color:inherit;cursor:pointer;padding:12px 19px;display:inline-flex;gap:16px;align-items:center;direction:ltr;font:800 11px/1 "DM Sans",sans-serif;letter-spacing:.09em;transition:background .2s,color .2s}
+.gallery-open:hover{background:var(--ink);color:#fff}
+.project.purple .gallery-open:hover,.project.dark .gallery-open:hover{background:#fff;color:var(--ink)}
+.gallery-open span{font-size:19px;line-height:.5}
+.gallery-family{display:grid;grid-template-columns:1fr 1fr;gap:clamp(10px,1.4vw,20px)}
+.family-story{height:clamp(380px,45vw,610px);position:relative;overflow:hidden;cursor:pointer;border:0;padding:0;text-align:left;color:#fff;background:#241d29;display:block}
+.family-story img{width:100%;height:100%;object-fit:cover;transition:transform .5s ease}
+.family-story:hover img{transform:scale(1.035)}
+.family-story:after{content:"";position:absolute;inset:20% 0 0;background:linear-gradient(transparent,rgba(12,10,18,.74));pointer-events:none}
+.family-story-label{position:absolute;z-index:1;bottom:26px;left:28px;right:25px;direction:ltr;display:flex;justify-content:space-between;align-items:end;gap:12px}
+.family-story-label strong{font:800 clamp(28px,3.8vw,56px)/.9 "DM Sans";letter-spacing:-.06em}
+.family-story-label small{display:block;font:700 10px/1.5 "DM Sans";letter-spacing:.17em;margin-bottom:11px}
+.family-story-label .arrow{font:400 35px/1 "DM Sans"}
+.collection-overlay{position:fixed;inset:0;z-index:150;display:none;background:#fbfaff;color:var(--ink);overflow-y:auto;overscroll-behavior:contain}
+.collection-overlay.open{display:block}
+.collection-top{position:sticky;top:0;z-index:2;background:rgba(251,250,255,.96);backdrop-filter:blur(16px);border-bottom:1px solid var(--line);padding:19px max(22px,calc((100vw - 1450px)/2));display:flex;align-items:center;justify-content:space-between;gap:18px;direction:ltr}
+.collection-heading{font:800 clamp(22px,3vw,38px)/1 "DM Sans";letter-spacing:-.055em}
+.collection-meta{font:700 10px/1.4 "DM Sans";letter-spacing:.12em;color:#766b80;margin-top:6px}
+.collection-close{width:44px;height:44px;border:1px solid var(--line);background:transparent;border-radius:50%;cursor:pointer;font-size:29px;line-height:1}
+.collection-content{width:min(calc(100% - 44px),1450px);margin:35px auto 70px;columns:3 280px;column-gap:16px}
+.collection-content .gallery-card{margin:0 0 16px;break-inside:avoid;cursor:zoom-in;position:relative;background:#f1edf5;display:block}
+.collection-content .gallery-card img{width:100%;height:auto;display:block;object-fit:contain}
+.collection-content .gallery-card.is-broken{display:none}
+.collection-content .gallery-card:hover{outline:2px solid var(--purple);outline-offset:-2px}
+.lightbox{position:fixed;inset:0;z-index:200;background:rgba(12,10,15,.95);display:none;align-items:center;justify-content:center;padding:28px}
+.lightbox.open{display:flex}
+.lightbox img{width:auto;height:auto;max-width:min(92vw,1500px);max-height:88vh;object-fit:contain}
 .lightbox-close,.lightbox-nav{position:absolute;border:0;background:rgba(255,255,255,.12);color:#fff;backdrop-filter:blur(10px);cursor:pointer;display:grid;place-items:center}
 .lightbox-close{top:20px;right:20px;width:44px;height:44px;border-radius:50%;font-size:25px}
 .lightbox-nav{top:50%;transform:translateY(-50%);width:48px;height:48px;border-radius:50%;font-size:28px}
 .lightbox-prev{left:20px}.lightbox-next{right:20px}.lightbox-count{position:absolute;bottom:18px;color:#fff;font:700 10px/1 "DM Sans";letter-spacing:.12em}
 @media(max-width:760px){
- .project{padding-top:38px;padding-bottom:72px}.project-head{margin-bottom:20px}
- .gallery-rail{gap:30px;padding-right:12vw}
- .gallery-panel{height:54vh;min-height:410px;gap:9px}
- .gallery-column{gap:9px}.gallery-column.stack .gallery-card{height:calc(50% - 4.5px)}
- .gallery-panel .feature.last{display:none}
- .gallery-control{width:38px;height:38px;font-size:22px}.gallery-nav{left:6px;right:6px}
- .gallery-progress{margin-top:12px}
+ .project{padding-top:40px;padding-bottom:70px}.project-head{margin-bottom:20px}
+ .gallery-preview{height:clamp(410px,112vw,560px);grid-template-columns:1fr 1fr;grid-template-rows:1.5fr 1fr 1fr;gap:7px}
+ .gallery-preview .gallery-card:first-child{grid-column:1 / -1;grid-row:1}
+ .gallery-preview .gallery-card:nth-child(6){display:none}
+ .gallery-footer{margin-top:16px}.gallery-footer .gallery-note{font-size:9px}
+ .gallery-open{font-size:10px;padding:11px 12px;gap:10px}
+ .gallery-family{gap:9px}.family-story{height:clamp(300px,75vw,450px)}
+ .family-story-label{left:13px;right:10px;bottom:16px;display:block}
+ .family-story-label strong{font-size:clamp(25px,7vw,37px)}
+ .family-story-label small{font-size:8px}.family-story-label .arrow{display:none}
+ .collection-top{padding:13px 15px}.collection-heading{font-size:24px}.collection-close{width:40px;height:40px}
+ .collection-content{width:calc(100% - 20px);margin:12px auto 45px;columns:2 145px;column-gap:9px}
+ .collection-content .gallery-card{margin-bottom:9px}
  .lightbox{padding:14px}.lightbox-nav{width:40px;height:40px}.lightbox-prev{left:8px}.lightbox-next{right:8px}.lightbox-close{top:10px;right:10px}
 }
-
-/* GROWING UP: one clean, crop-free horizontal exhibition strip */
-.gallery[data-key="family"] .gallery-rail{height:clamp(340px,38vw,520px);gap:clamp(12px,1.1vw,20px);align-items:stretch;padding-right:8vw}
-.gallery[data-key="family"] .gallery-card{height:100%;width:auto;aspect-ratio:3/4;flex:0 0 auto;scroll-snap-align:start;overflow:hidden}
-.gallery[data-key="family"] .gallery-card img{width:100%;height:100%;object-fit:contain}
-@media(max-width:760px){
- .gallery[data-key="family"] .gallery-rail{height:clamp(280px,66vw,390px);gap:9px;padding-right:10vw}
-}
+@media(prefers-reduced-motion:reduce){.gallery-preview img,.family-story img{transition:none}}
 </style></head><body>
 <header><div class="nav"><a class="brand" href="#top">LISHU<b>.</b></a><nav><a href="#work">עבודות</a><a href="#about">קצת עליי</a></nav><a class="talk" href="https://instagram.com/lishu.il" target="_blank" rel="noreferrer">דברו איתי ↗</a></div></header>
 <main id="top">
@@ -109,7 +130,7 @@ let activeIds=[],activeIndex=0;
 function openLightbox(ids,index){activeIds=ids;activeIndex=index;renderLightbox();lb.classList.add("open");document.body.style.overflow="hidden"}
 function renderLightbox(){lbImg.src=drive(activeIds[activeIndex]);lbCount.textContent=(activeIndex+1)+" / "+activeIds.length}
 function moveLightbox(step){activeIndex=(activeIndex+step+activeIds.length)%activeIds.length;renderLightbox()}
-function closeLightbox(){lb.classList.remove("open");document.body.style.overflow=""}
+function closeLightbox(){lb.classList.remove("open");document.body.style.overflow=collection.classList.contains("open")?"hidden":""}
 lb.querySelector(".lightbox-close").onclick=closeLightbox;
 lb.querySelector(".lightbox-prev").onclick=()=>moveLightbox(-1);
 lb.querySelector(".lightbox-next").onclick=()=>moveLightbox(1);
@@ -129,69 +150,104 @@ async function syncDrive(){
  }catch(e){console.warn("Using built-in gallery fallback",e)}
 }
 
+
 function galleryHash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
 function spreadOrder(items,groups=6){
  const chunks=Array.from({length:groups},()=>[]);
  items.forEach((item,i)=>chunks[Math.min(groups-1,Math.floor(i*groups/items.length))].push(item));
  const out=[],max=Math.max(...chunks.map(x=>x.length));
- for(let row=0;row<max;row++) for(let col=0;col<chunks.length;col++) if(chunks[col][row]) out.push(chunks[col][row]);
+ for(let row=0;row<max;row++)for(let col=0;col<chunks.length;col++)if(chunks[col][row])out.push(chunks[col][row]);
  return out;
 }
-function makeCard(id,index,ids,naturalSize=false){
- const card=document.createElement("figure");card.className="gallery-card";
- const im=document.createElement("img");im.loading=index<10?"eager":"lazy";im.src=drive(id,"w1600");im.alt="";
- im.dataset.retry="0";
- if(naturalSize) im.onload=()=>{if(im.naturalWidth&&im.naturalHeight)card.style.aspectRatio=im.naturalWidth+"/"+im.naturalHeight};
+const yearTwoIds=new Set([
+ "1KarDXQ_qOmm7rSGvUnNS00vTHUkSGsiT","1hMZVK4AQZF--coCLqh1VF-bNkXGJvZr-",
+ "1flC6vU9Sm0c4GZrGgHC0zMkpDQMEWiHy","1IWb_AGJ-8Qp2Qu-_kGpINIyKKRCVaGTy",
+ "1rMQY_C24vQeWwQ9lz_ub-S7OLTKx0suK","1uB3hcYSXu6zsN-0twEMyRSHJv16jms5P",
+ "1gistw06-R0DFf39hJ5EgD2BjQtHDLqa3","1ZqFxip7PgH14ho0o4OUxVnsknt_XDc6Y",
+ "1WCCVyPIAKXmQ1_aJ1VprFKpC4wuoapaD","1elEiAZ1DG-MRqUEIqMMw5-Dtx3KPPZjw",
+ "1uOPqvHJAAYL-4i9Rl1Uoy9u5E0euKHT7","1WP0-iqh8fLlIdttK_9IU9T93tof5vcNV",
+ "1fX58v1rvvxLqsVSjezKHDZ4UvpfIAriK"
+]);
+const yearTwoFeatured=["1KarDXQ_qOmm7rSGvUnNS00vTHUkSGsiT","1hMZVK4AQZF--coCLqh1VF-bNkXGJvZr-","1flC6vU9Sm0c4GZrGgHC0zMkpDQMEWiHy"];
+const yearOneFeatured=["10347IJM5qe1qn4B5zJ4Ihq-0KJKtxAct","1hP1fBOZzTGRujQYaGDrXxnffC5BVP3T5"];
+function makeCard(id,index,ids,openAction){
+ const card=document.createElement("figure");card.className="gallery-card";card.tabIndex=0;card.setAttribute("role","button");card.setAttribute("aria-label","Open photo");
+ const im=document.createElement("img");im.loading=index<5?"eager":"lazy";im.decoding="async";im.src=drive(id,index<5?"w1400":"w900");im.alt="LISHU photography";im.dataset.retry="0";
  im.onerror=()=>{
    const retry=Number(im.dataset.retry||0);
-   if(retry===0){im.dataset.retry="1";setTimeout(()=>{im.src=drive(id,"w1000")},250+((index%6)*120));return}
-   if(retry===1){im.dataset.retry="2";setTimeout(()=>{im.src=drive(id,"w800")},900+((index%5)*180));return}
+   if(retry<2){im.dataset.retry=String(retry+1);setTimeout(()=>{im.src=drive(id,retry===0?"w700":"w400")},350+(index%5)*160);return}
    card.classList.add("is-broken");im.removeAttribute("src");
  };
- card.appendChild(im);card.onclick=()=>openLightbox(ids,index);return card;
+ card.appendChild(im);
+ const activate=()=>openAction?openAction():openLightbox(ids,index);
+ card.onclick=activate;
+ card.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();activate()}};
+ return card;
+}
+const collection=document.createElement("div");collection.className="collection-overlay";
+collection.setAttribute("role","dialog");collection.setAttribute("aria-modal","true");collection.setAttribute("aria-label","Photography gallery");
+collection.innerHTML='<div class="collection-top"><div><div class="collection-heading"></div><div class="collection-meta"></div></div><button class="collection-close" aria-label="Close gallery">×</button></div><div class="collection-content"></div>';
+document.body.appendChild(collection);
+const collectionContent=collection.querySelector(".collection-content");
+function openCollection(title,ids){
+ collection.querySelector(".collection-heading").textContent=title;
+ collection.querySelector(".collection-meta").textContent=ids.length+" PHOTOGRAPHS";
+ collectionContent.replaceChildren();
+ ids.forEach((id,i)=>collectionContent.appendChild(makeCard(id,i,ids)));
+ collection.classList.add("open");collection.scrollTop=0;document.body.style.overflow="hidden";
+ collection.querySelector(".collection-close").focus();
+}
+function closeCollection(){collection.classList.remove("open");collectionContent.replaceChildren();document.body.style.overflow=""}
+collection.querySelector(".collection-close").onclick=closeCollection;
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!lb.classList.contains("open")&&collection.classList.contains("open"))closeCollection()});
+function orderGallery(g){
+ let ids=g.dataset.ids.split(",").map(x=>x.trim()).filter(Boolean);
+ if(g.dataset.key==="portraits")ids=spreadOrder(ids,6);
+ else if(["live","creative"].includes(g.dataset.key))ids=[...ids].sort((a,b)=>galleryHash(a)-galleryHash(b));
+ return ids;
+}
+function orderedPreview(ids,key){
+ if(key==="wrestling"||key==="family")return ids;
+ // Select across the series rather than showing consecutive frames of the same subject.
+ const picks=[],positions=[0,.24,.49,.73,.93,.36];
+ for(const p of positions){const id=ids[Math.min(ids.length-1,Math.floor(p*ids.length))];if(id&&!picks.includes(id))picks.push(id)}
+ return picks;
 }
 function buildGallery(g){
- let ids=g.dataset.ids.split(",").map(x=>x.trim()).filter(Boolean);
- if(g.dataset.key==="portraits") ids=spreadOrder(ids,6);
- else if(["live","creative"].includes(g.dataset.key)) ids=[...ids].sort((a,b)=>galleryHash(a)-galleryHash(b));
-
+ const ids=orderGallery(g),key=g.dataset.key,title=g.dataset.name||"SELECTED WORK";
+ if(!ids.length)return;
  const shell=document.createElement("div");shell.className="gallery-shell";
- const rail=document.createElement("div");rail.className="gallery-rail";
-
- if(g.dataset.key==="family"){
-   ids.forEach((id,i)=>rail.appendChild(makeCard(id,i,ids,true)));
- }else{
- for(let p=0;p<ids.length;p+=4){
-   const batch=ids.slice(p,p+4);
-   const panel=document.createElement("div");panel.className="gallery-panel "+(((p/4)%2)?"layout-b":"layout-a");
-   const first=document.createElement("div");first.className="gallery-column feature first";
-   const stack=document.createElement("div");stack.className="gallery-column stack";
-   const last=document.createElement("div");last.className="gallery-column feature last";
-   if(batch[0])first.appendChild(makeCard(batch[0],p,ids));
-   if(batch[1])stack.appendChild(makeCard(batch[1],p+1,ids));
-   if(batch[2])stack.appendChild(makeCard(batch[2],p+2,ids));
-   if(batch[3])last.appendChild(makeCard(batch[3],p+3,ids));
-   panel.append(first,stack,last);rail.appendChild(panel);
+ if(key==="family"){
+   const yearTwo=ids.filter(id=>yearTwoIds.has(id));
+   const yearOne=ids.filter(id=>!yearTwoIds.has(id));
+   if(yearOne.length&&yearTwo.length){
+     const stories=document.createElement("div");stories.className="gallery-family";
+     const groups=[
+       {title:"THE FIRST YEAR",subtitle:"RAFAEL / AGE ONE",ids:yearOne,cover:yearOneFeatured.find(id=>yearOne.includes(id))||yearOne[0]},
+       {title:"TWO YEARS",subtitle:"RAFAEL / AGE TWO",ids:yearTwo,cover:yearTwoFeatured.find(id=>yearTwo.includes(id))||yearTwo[0]}
+     ];
+     groups.forEach(group=>{
+       const card=document.createElement("button");card.className="family-story";card.type="button";
+       const im=document.createElement("img");im.loading="lazy";im.src=drive(group.cover,"w1400");im.alt=group.subtitle;
+       const label=document.createElement("div");label.className="family-story-label";
+       const copy=document.createElement("div");const small=document.createElement("small");small.textContent=group.subtitle;
+       const strong=document.createElement("strong");strong.textContent=group.title;copy.append(small,strong);
+       const arrow=document.createElement("span");arrow.className="arrow";arrow.textContent="↗";
+       label.append(copy,arrow);card.append(im,label);card.onclick=()=>openCollection(group.title,group.ids);
+       stories.appendChild(card);
+     });
+     shell.appendChild(stories);g.appendChild(shell);return;
+   }
  }
- }
- const nav=document.createElement("div");nav.className="gallery-nav";
- nav.innerHTML='<div class="gallery-controls"><button class="gallery-control prev" aria-label="Previous gallery view">‹</button><button class="gallery-control next" aria-label="Next gallery view">›</button></div>';
- const progress=document.createElement("div");progress.className="gallery-progress";progress.innerHTML="<span></span>";
- shell.append(rail,nav,progress);g.appendChild(shell);
- const bar=progress.firstElementChild;
- const update=()=>{const max=rail.scrollWidth-rail.clientWidth;bar.style.width=(max<=0?100:Math.max(4,Math.min(100,4+(rail.scrollLeft/max)*96)))+"%"};
- rail.addEventListener("scroll",update,{passive:true});requestAnimationFrame(update);
- nav.querySelector(".next").onclick=()=>rail.scrollBy({left:rail.clientWidth*.84,behavior:"smooth"});
- nav.querySelector(".prev").onclick=()=>rail.scrollBy({left:-rail.clientWidth*.84,behavior:"smooth"});
- rail.addEventListener("wheel",e=>{
-   if(Math.abs(e.deltaY)<=Math.abs(e.deltaX)||rail.scrollWidth<=rail.clientWidth)return;
-   const max=rail.scrollWidth-rail.clientWidth,canMove=(e.deltaY>0&&rail.scrollLeft<max-2)||(e.deltaY<0&&rail.scrollLeft>2);
-   if(canMove){e.preventDefault();rail.scrollLeft+=e.deltaY}
- },{passive:false});
- let down=false,startX=0,startScroll=0;
- rail.addEventListener("pointerdown",e=>{down=true;startX=e.clientX;startScroll=rail.scrollLeft;rail.classList.add("dragging");rail.setPointerCapture(e.pointerId)});
- rail.addEventListener("pointermove",e=>{if(down)rail.scrollLeft=startScroll-(e.clientX-startX)});
- const stop=()=>{down=false;rail.classList.remove("dragging")};rail.addEventListener("pointerup",stop);rail.addEventListener("pointercancel",stop);
+ const preview=document.createElement("div");preview.className="gallery-preview";
+ const picks=orderedPreview(ids,key).slice(0,5);
+ picks.forEach(id=>preview.appendChild(makeCard(id,ids.indexOf(id),ids,()=>openCollection(title,ids))));
+ shell.appendChild(preview);
+ const footer=document.createElement("div");footer.className="gallery-footer";
+ const note=document.createElement("span");note.className="gallery-note";note.textContent=String(ids.length).padStart(2,"0")+" FRAMES / CURATED SELECTION";
+ const btn=document.createElement("button");btn.type="button";btn.className="gallery-open";btn.innerHTML='VIEW FULL GALLERY <span aria-hidden="true">↗</span>';
+ btn.onclick=()=>openCollection(title,ids);
+ footer.append(note,btn);shell.appendChild(footer);g.appendChild(shell);
 }
 
 (async()=>{await syncDrive();document.querySelectorAll("[data-gallery]").forEach(buildGallery)})();
