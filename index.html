@@ -146,6 +146,15 @@ footer{background:#15121a;color:#fff;padding:34px 0}.foot{width:min(calc(100% - 
  .gallery-preview{height:clamp(400px,106vw,530px)}
  .gallery-family .family-story{height:clamp(300px,75vw,440px)}
 }
+
+/* LISHU: editorial horizontal portfolio strips */
+.gallery-preview{display:flex!important;flex-direction:row!important;direction:ltr;gap:12px!important;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;height:clamp(310px,43vw,510px)!important;overscroll-behavior-x:contain;padding-bottom:3px}
+.gallery-preview::-webkit-scrollbar{display:none}
+.gallery-preview .gallery-card,.gallery-preview .gallery-card:first-child{display:block!important;flex:0 0 auto!important;grid-column:auto!important;grid-row:auto!important;width:auto!important;min-width:0!important;max-width:85vw!important;height:100%!important;aspect-ratio:auto!important;scroll-snap-align:start;overflow:hidden;background:transparent}
+.gallery-preview .gallery-card img{width:auto!important;max-width:85vw!important;height:100%!important;object-fit:contain!important;display:block}
+.gallery-preview .gallery-card:after{display:none}
+.gallery-footer{margin-top:12px!important}
+@media(max-width:700px){.gallery-preview{height:340px!important;gap:10px!important}.gallery-preview .gallery-card,.gallery-preview .gallery-card:first-child{max-width:88vw!important}.gallery-preview .gallery-card img{max-width:88vw!important}.gallery-footer .gallery-note{font-size:10px}.gallery-footer{gap:10px!important}}
 </style></head><body>
 <header><div class="nav"><a class="brand" href="#top">LISHU<b>.</b></a><nav><a href="#work">עבודות</a><a href="#about">קצת עליי</a></nav><a class="talk" href="https://instagram.com/lishu.il" target="_blank" rel="noreferrer">דברו איתי ↗</a></div></header>
 <main id="top">
@@ -354,12 +363,13 @@ function buildGallery(g){
    }
  }
  const preview=document.createElement("div");preview.className="gallery-preview";
- const picks=orderedPreview(ids,key).slice(0,5);
+ preview.setAttribute("aria-label","גלריית תמונות, ניתן לגלול לצדדים");
+ const picks=orderedPreview(ids,key).slice(0,8);
  picks.forEach(id=>preview.appendChild(makeCard(id,ids.indexOf(id),ids,()=>openCollection(title,ids))));
  shell.appendChild(preview);
  const footer=document.createElement("div");footer.className="gallery-footer";
- const note=document.createElement("span");note.className="gallery-note";note.textContent=String(ids.length).padStart(2,"0")+" FRAMES / CURATED SELECTION";
- const btn=document.createElement("button");btn.type="button";btn.className="gallery-open";btn.innerHTML='VIEW FULL GALLERY <span aria-hidden="true">↗</span>';
+ const note=document.createElement("span");note.className="gallery-note";note.textContent="← SWIPE TO EXPLORE";
+ const btn=document.createElement("button");btn.type="button";btn.className="gallery-open";btn.innerHTML='MORE PHOTOS <span aria-hidden="true">↗</span>';
  btn.onclick=()=>openCollection(title,ids);
  footer.append(note,btn);shell.appendChild(footer);g.appendChild(shell);
 }
