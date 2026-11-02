@@ -282,24 +282,23 @@ function openCollection(title,ids){
  collection.querySelector(".collection-heading").textContent=title;
  collection.classList.add("open");document.body.style.overflow="hidden";
  const stage=collection.querySelector(".collection-stage");
- stage.style.overflowY="auto";stage.style.display="block";stage.style.height="min(72vh,850px)";
- stage.style.scrollBehavior="smooth";
+ stage.style.cssText="display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;gap:16px;align-items:center;padding:15px;height:min(72vh,850px);overscroll-behavior-x:contain";
  collection.querySelector(".collection-prev").style.display="none";
  collection.querySelector(".collection-next").style.display="none";
- collectionStrip.style.display="none";
- collectionPhoto.style.display="none";
+ collectionStrip.style.display="none";collectionPhoto.style.display="none";
  let list=stage.querySelector(".collection-scroll");
  if(!list){list=document.createElement("div");list.className="collection-scroll";stage.appendChild(list)}
- list.replaceChildren();list.style.cssText="display:flex;flex-direction:column;align-items:center;gap:22px;padding:15px 8px 40px";
- const count=Math.min(ids.length,8);let shown=0;
- const more=document.createElement("button");more.type="button";more.textContent="LOAD MORE ↓";more.style.cssText="padding:14px 26px;border:1px solid #aaa;background:#fff;color:#151019;border-radius:30px;cursor:pointer;font-weight:800";
+ list.replaceChildren();list.style.cssText="display:flex;flex-direction:row;align-items:center;gap:16px;height:100%;width:max-content";
+ let shown=0;
+ const more=document.createElement("button");more.type="button";more.textContent="עוד תמונות ←";more.style.cssText="flex:0 0 180px;padding:16px;border:1px solid #aaa;background:#fff;color:#151019;border-radius:24px;cursor:pointer;font-weight:800;scroll-snap-align:center";
  function appendBatch(){
   const batch=ids.slice(shown,shown+8);shown+=batch.length;
-  batch.forEach(id=>{const im=document.createElement("img");im.loading="lazy";im.src=drive(id,"w1400");im.alt=title;im.style.cssText="display:block;width:auto;max-width:100%;max-height:78vh;height:auto;object-fit:contain";im.onerror=()=>{im.src=drive(id,"w900")};list.insertBefore(im,more)});
+  batch.forEach(id=>{const im=document.createElement("img");im.loading="lazy";im.src=drive(id,"w1400");im.alt=title;im.style.cssText="display:block;flex:0 0 auto;width:auto;max-width:90vw;height:auto;max-height:100%;object-fit:contain;scroll-snap-align:center;border-radius:4px";im.onerror=()=>{im.onerror=null;im.src=drive(id,"w900")};list.insertBefore(im,more)});
   more.style.display=shown<ids.length?"block":"none";
   collection.querySelector(".collection-counter").textContent=shown+" / "+ids.length;
  }
- more.onclick=appendBatch;list.appendChild(more);appendBatch();stage.scrollTop=0;
+ more.onclick=()=>{appendBatch();more.previousElementSibling?.scrollIntoView({behavior:"smooth",inline:"end",block:"nearest"})};
+ list.appendChild(more);appendBatch();stage.scrollLeft=0;
  collection.querySelector(".collection-close").focus();
 }
 function closeCollection(){collection.classList.remove("open");collectionIds=[];collectionRequest++;collectionPhoto.removeAttribute("src");collectionStrip.replaceChildren();collection.querySelector(".collection-scroll")?.replaceChildren();document.body.style.overflow=""}
